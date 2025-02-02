@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+# TO-DO
+# Modify to allow multiple files to be encrypted at once
+# Add a GUI Interface for easier encryption/decryption
+# Implement a password-based key derivation function (PBKDF2) instead of storing the key in a file
+
+# Encrypt a single string
+# Import Libraries
+
+from cryptography.fernet import Fernet
+
+# Declare Functions
+
+def write_key():
+    # Generates a key 
+    key = Fernet.generate_key()
+    # And save it into a file. "wb" to be able to write as bytes
+    with open("key.key", "wb") as key_file:
+        key_file.write(key)
+        print(key)
+
+def load_key():
+    # Loads the key from the current directory named `key.key`
+    return open("key.key", "rb").read()
+
+# Main
+menu = "Menu"
+option1 = "1. Generates a key"
+option2 = "2. Loads the generated key"
+option3 = "3. Encode a message with a key"
+option4 = "4. Convert the message in cypher text"
+option5 = "5. Convert the message in cypher text"
+leave = "Type \"Exit\" to leave the program"
+choice = ""
+
+while choice != "Exit":
+    print("")
+    print("====")
+    print(menu)
+    print(option1)
+    print(option2)
+    print(option3)
+    print(option4)
+    print(option5)
+    print(leave)
+
+    choice = input("Enter your choice: ")
+    if choice == '1':
+        # Generate and write a new key
+        write_key()
+    
+    elif choice == '2':
+        # Load the previously generated key
+        key = load_key()
+        print("Key is " + str(key.decode('utf-8')))
+      
+    elif choice == '3':
+        ask_message = input("What message do you want to encode? ")
+        message = ask_message.encode()
+        print('The message in plaintext is "' + str(message.decode('utf-8')) + '"')
+    
+    elif choice == '4':
+        # Initialize the Fernet class to use the key
+        cypher = Fernet(key)
+        # Encrypt the message in a cypher
+        encrypted = cypher.encrypt(message)
+        # Print how it looks
+        print("Ciphertext is " + encrypted.decode('utf-8'))
+
+    elif choice == '5':
+        input_cypher = input('What is the cypher text?')
+        decrypted_cypher = cypher.decrypt(input_cypher) 
+        print(str(decrypted_cypher.decode('utf-8')))
+
+    elif choice == 'Exit':
+        print("Bye!")
+    
+    else:
+        print("Invalid choice, please try again")
+
+
+
+
+
+
