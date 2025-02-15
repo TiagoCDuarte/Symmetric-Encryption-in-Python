@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+
+# TO-DO
+# Modify to allow multiple files to be encrypted at once
+# Add a GUI Interface for easier encryption/decryption
+# Implement a password-based key derivation function (PBKDF2) instead of storing the key in a file
+
+# Import Libraries
+
+from cryptography.fernet import Fernet
+
+# Declare Functions
+
+def write_key():
+    # Generates a key 
+    key = Fernet.generate_key()
+    # And save it into a file. "wb" to be able to write as bytes
+    with open("key.key", "wb") as key_file:
+        key_file.write(key)
+        print(key.decode('utf-8'))
+        
+def load_key():
+    wrong_option = 0
+    while wrong_option != 3:
+        # Loads the key from the current directory named `key.key`
+        choose_key = input("Do you want to load the stored key(1) or use a different one(2)?(1/2)")
+        if choose_key == "1":
+            with open("key.key", "rb") as key_file:
+                key = key_file.read()
+                #print(key)
+            created_key = key.decode('utf-8')
+            print("The key is " + created_key)
+            return created_key
+        elif choose_key == "2":
+            new_key = input("What is the key that you want to use?")
+            print("The key is " + new_key)
+            return new_key
+        else:
+            wrong_option += 1
+            print(wrong_option)
+            print("Please choose the option 1 or 2")
+
+def enc_message(key):
+    ask_message = input("What message do you want to encode? ")
+    message = ask_message.encode()
+    #print(key)
+    
+    # Initialize the Fernet class to use the key
+    cypher = Fernet(key)
+    # Encrypt the message in a cypher
+    encrypted = cypher.encrypt(message)
+    encrypted_str = encrypted.decode('utf-8')
+    print("")
+    print('The message in plaintext is "' + str(message.decode('utf-8')) + '"')
+    print("The cypher text is " + encrypted_str)
+    print("The cypher text in binary is " + str(encrypted))
+    return encrypted_str
+
+def dec_message():
+    # The ".encode" will ensure the input is in bites
+    input_cypher = input("What is the cypher text?").encode()
+    dec_key = input("What is the key to decrypt?").encode()
+    # Ensure the key is in the correct format
+    if len(dec_key) != 44:
+        raise ValueError("The key must be a base64-encoded string of 32 bytes.")
+    # Create a Fernet object using the decryption key
+    cipher = Fernet(dec_key)
+    # Decrypt the message
+    decrypted_message = cipher.decrypt(input_cypher)
+    print("The decrypted message is: " + decrypted_message.decode('utf-8'))
+
+def encrypt_file(key, file_path):
+    fernet = Fernet(key)
+    with open(file_path, "rb") as file:
+        file_data = file.read()
+    encrypted_data = fernet.encrypt(file_data)
+    with open(file_path + ".encrypted", "wb") as file:
+        file.write(encrypted_data)
+    
+    print(f"File {file_path} has been encrypted and saved as {file_path}.encrypted")
+
+def decrypt_file(key, file_path):
+    fernet = Fernet(key)
+    
+    with open(file_path, "rb") as file:
+        encrypted_data = file.read()
+    
+    decrypted_data = fernet.decrypt(encrypted_data)
+    
+    decrypted_file_path = file_path.replace(".encrypted", ".decrypted")
+    with open(decrypted_file_path, "wb") as file:
+        file.write(decrypted_data)
+    print(f"File {file_path} has been decrypted and saved as {decrypted_file_path}")
+
+
+def bad_option():
+    wrong_optionm += 1
+    #print(wrong_optionm)
+    if wrong_optionm <= 2:
+        print("Invalid choice, please try again")
+    if wrong_optionm == 3:
+        print("Too many failed attempts")
+        choice = "Exit"
+
+def Main():
+    # Variables
+    used_key = ""
+    wrong_optionm = 0
+
+    #Main
+    menu = "Menu"
+    option1 = "1. Generates a key"
+    option2 = "2. Loads a key"
+    option3 = "3. Show the key in use"
+    option4 = "4. Encode a message with a key"
+    option5 = "5. See the cypher text of the encoded message"
+    option6 = "6. Decode the cypher to text"
+    option7 = "7. Encrypt file"
+    option8 = "8. Decrypt file"
+    leave = "Type \"Exit\" to leave the program"
+    choice = ""
+
+    while choice != "Exit":
+        print("")
+        print("====")
+        print(menu)
+        print(option1)
+        print(option2)
+        print(option3)
+        print(option4)
+        print(option5)
+        print(option6)
+        print(option7)
+        print(option8)
+        print(leave)
+
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            write_key()
+    
+        elif choice == '2':
+            used_key = load_key()
+        
+        elif choice == '3':
+            print("The key in use is "+ used_key)
+        
+        elif choice == '4':
+            cypher_txt = enc_message(used_key)
+        
+        elif choice == '5':
+            print("The cypher text is: " + cypher_txt)
+        
+        elif choice == '6':
+            dec_message()
+            
+        elif choice == '7':
+            enc_file_path = input("What file do you want to encrypt?")
+            encrypt_file(used_key,enc_file_path)
+
+        elif choice == '8':
+            dec_file_path = input("What file do you want to decrypt?")
+            decrypt_file(used_key,dec_file_path)
+            
+        elif choice == 'Exit':
+            print("Bye!")             
+        else:
+            bad_option()
+
+# Main
+Main()
